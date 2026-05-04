@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyKode - Solution Engine</title>
+    <style>
+        :root { --primary: #38bdf8; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .container { background: var(--card); padding: 30px; border-radius: 20px; width: 100%; max-width: 550px; border: 1px solid #334155; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        h1 { font-size: 1.5rem; color: var(--primary); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        textarea { width: 100%; background: #0b1120; border: 1px solid #334155; color: white; padding: 15px; border-radius: 12px; font-size: 1rem; margin-bottom: 15px; min-height: 120px; outline: none; }
+        textarea:focus { border-color: var(--primary); }
+        button { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 10px; font-weight: 700; width: 100%; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        button:hover { background: #0ea5e9; transform: translateY(-2px); }
+        .status { margin-top: 15px; font-size: 0.85rem; color: #94a3b8; text-align: center; min-height: 20px; }
+        #videoContainer { margin-top: 20px; display: none; animation: fadeIn 0.5s ease-out; }
+        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 12px; overflow: hidden; background: #000; }
+        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        .bounty { background: rgba(234, 179, 8, 0.1); border: 1px dashed #eab308; padding: 20px; border-radius: 12px; margin-top: 20px; display: none; text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1><span>👻</span> GhostSearch 1.0</h1>
+    <p style="color: #94a3b8; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px;">Zero-cost automated video solution indexing.</p>
+    
+    <textarea id="q" placeholder='Paste your question here (e.g. "Find the value of gravitational constant...")'></textarea>
+    <button id="btn">Find Video Solution</button>
+    
+    <div id="status" class="status">Ready</div>
+
+    <div id="videoContainer">
+        <div class="video-wrapper">
+            <iframe id="player" src="" allowfullscreen></iframe>
+        </div>
+        <p style="text-align: center; font-size: 0.8rem; color: #64748b; margin-top: 10px;">Found via StudyKode Global Index</p>
+    </div>
+
+    <div id="bounty" class="bounty">
+        <h3 style="color: #facc15; margin: 0;">🕵️‍♂️ Bounty Alert!</h3>
+        <p style="font-size: 0.85rem; color: #cbd5e1;">No direct video found. Paste a link to earn 50 coins.</p>
+        <input type="text" placeholder="YouTube URL..." style="width: 80%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #222; color: white;">
+    </div>
+</div>
+
+<script>
+    const btn = document.getElementById('btn');
+    const status = document.getElementById('status');
+    const videoContainer = document.getElementById('videoContainer');
+    const bounty = document.getElementById('bounty');
+    const player = document.getElementById('player');
+
+    btn.onclick = async () => {
+        const query = document.getElementById('q').value.trim();
+        if(!query) return alert("Enter a question!");
+
+        // Reset UI
+        status.innerText = "🔍 Connecting to Ghost Network...";
+        videoContainer.style.display = 'none';
+        bounty.style.display = 'none';
+        btn.disabled = true;
+
+        try {
+            // Using the 'raw' proxy method which is more stable for HTML scraping
+            // Targeting the STATIC HTML version of DuckDuckGo for easier parsing
+            const target = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query + ' site:youtube.com/watch1')}`;
+            const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+
+            const resp = await fetch(proxy);
+            if(!resp.ok) throw new Error("Proxy Error");
+            
+            const html = await resp.text();
+            
+            status.innerText = "⚙️ Extracting Video Signatures...";
+
+            // Improved Regex: Grabs IDs from youtube.com/watch?v=... OR youtu.be/...
+            // In the HTML results, IDs often appear inside encoded strings
+            const regex = /(?:v=|v%3D|vi\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = html.match(regex);
+
+            if(match && match[1]) {
+                const id = match[1];
+                status.innerText = "✅ Solution Found!";
+                player.src = `youtube.com/watch2{id}`;
+                videoContainer.style.display = 'block';
+            } else {
+                status.innerText = "⚠️ No direct match in database.";
+                bounty.style.display = 'block';
+            }
+        } catch (e) {
+            status.innerText = "❌ Scraper Blocked. Check internet or CORS.";
+            console.error(e);
+            bounty.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+        }
+    };
+</script>
+
+</body>
+</html>
+w
